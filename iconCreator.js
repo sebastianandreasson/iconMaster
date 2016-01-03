@@ -53,7 +53,8 @@ iconCreator.prototype.contrast = function(amount){
     console.log("iconCreator.prototype.contrast call");
     var self = this;
     self.operationQueue.push(function(queueCallback){
-        var cute = 'convert ' + self.filePath + ' -fuzz 10% -fill black +opaque black ' + self.filePath;
+        amount = amount ? amount : 10;
+        var cute = "convert " + self.filePath + " -fuzz " + amount + "% -fill black +opaque black " + self.filePath;
         exec(cute, function (error, stdout, stderr) {
             if (error || stderr){
                 console.log(error || stderr);
@@ -67,7 +68,7 @@ iconCreator.prototype.contrast = function(amount){
 iconCreator.prototype.monochrome = function(){
     var self = this;
     self.operationQueue.push(function(queueCallback){
-        var cute = 'convert ' + self.filePath + ' -fill black +opaque black ' + self.filePath;
+        var cute = "convert " + self.filePath + " -fill black +opaque black " + self.filePath;
         exec(cute, function (error, stdout, stderr) {
             if (error || stderr){
                 console.log(error || stderr);
@@ -78,10 +79,12 @@ iconCreator.prototype.monochrome = function(){
     return self;
 };
 
-iconCreator.prototype.checkColor = function(){
+iconCreator.prototype.checkColor = function(x, y){
     var self = this;
     self.operationQueue.push(function(queueCallback){
-        var cute = 'convert ' + self.filePath + ' -scale 1x1\! -format \'%[pixel:u]\' info:-';
+        x = x ? x : 1;
+        y = y ? y : 1;
+        var cute = "convert " + self.filePath + " -scale " + x + "x" + y + "\! -format \'%[pixel:u]\' info:-";
         exec(cute, function (error, stdout, stderr) {
             if (error || stderr){
                 console.log(error || stderr);
@@ -98,7 +101,8 @@ iconCreator.prototype.checkColor = function(){
 iconCreator.prototype.resizeAndCenter = function(size){
     var self = this;
     self.operationQueue.push(function(queueCallback){
-        var cute = 'convert -define png:size=' + size + ' ' + self.filePath + ' -thumbnail \'200x200\' -background transparent -gravity center -extent 220x220 ' + self.filePath;
+        size = size ? size : "220x220";
+        var cute = "convert -define png:size=" + size + " " + self.filePath + " -thumbnail \"200x200\" -background transparent -gravity center -extent 220x220 " + self.filePath;
         exec(cute, function (error, stdout, stderr) {
             if (error || stderr){
                 console.log(error || stderr);
@@ -113,7 +117,7 @@ iconCreator.prototype.toBmp = function(){
     var self = this;
     self.operationQueue.push(function(queueCallback){
         self.filePath_bmp = self.filePath.replace(".png", ".bmp");
-        var cute = 'convert ' + self.filePath +  ' -background "#FFFFFF" -flatten ' + self.filePath_bmp;
+        var cute = "convert " + self.filePath +  " -background \"#FFFFFF\" -flatten " + self.filePath_bmp;
         exec(cute, function (error, stdout, stderr) {
             if (error || stderr){
                 console.log(error || stderr);
@@ -123,17 +127,12 @@ iconCreator.prototype.toBmp = function(){
     });
     return self;
 };
-
-// mkbitmap ./test.bmp -f 2 -s 1 -t 0.48 -o ./test1.bmp
-// mkbitmap ./test.bmp -f 2 -s 2 -t 0.48 -o ./test1.bmp
-// -x -t 0.5
-
 
 iconCreator.prototype.toSvg = function(){
     var self = this;
     self.operationQueue.push(function(queueCallback){
         self.filePath_svg = self.filePath_bmp.replace(".bmp", ".svg");
-        var cute = 'potrace -s -o ' + self.filePath_svg + ' ' + self.filePath_bmp;
+        var cute = "potrace -s -o " + self.filePath_svg + ' ' + self.filePath_bmp;
         exec(cute, function (error, stdout, stderr) {
             if (error || stderr){
                 console.log(error || stderr);
@@ -144,10 +143,13 @@ iconCreator.prototype.toSvg = function(){
     return self;
 };
 
-iconCreator.prototype.pixelate = function(){
+iconCreator.prototype.pixelate = function(filter, scale, threshold){
     var self = this;
     self.operationQueue.push(function(queueCallback){
-        var cute = 'mkbitmap ' + self.filePath_bmp + ' -f 1 -s 2 -t 0.5 -o ' + self.filePath_bmp;
+        filter = filter ? filter : 1;
+        scale = scale ? scale : 2;
+        threshold = threshold ? threshold : 0.5;
+        var cute = "mkbitmap " + self.filePath_bmp + " -f " + filter + " -s " + scale + " -t " + threshold + " -o " + self.filePath_bmp;
         exec(cute, function (error, stdout, stderr) {
             if (error || stderr){
                 console.log(error || stderr);
