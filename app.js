@@ -30,8 +30,8 @@ var app = express();
 
 (function(){
 
-    var iconCreator = require('./iconCreator.js');
-    iconCreator = new iconCreator("test");
+    var IconCreator = require('./iconCreator.js');
+    const iconCreator = new IconCreator("test");
 
     iconCreator.download("https://upload.wikimedia.org/wikipedia/commons/1/1c/%C3%89l%C3%A9phant_(d%C3%A9tour%C3%A9).png")
     .resizeAndCenter()
