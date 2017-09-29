@@ -7,36 +7,33 @@ const exec = require('child_process').exec
 
 class iconCreator {
   constructor (name) {
-    this.name = name.split(" ").join("")
-    this.path = "./icons/"
+    this.name = name.split(' ').join('')
+    this.path = './icons/'
     this.filePath = null
     this.filePath_bmp = null
     this.filePath_svg = null
     this.url = null
     this.icon = null
-    this.operationQueue = async.queue((task, callback) => {
-      console.log('item pushed')
-      task(callback)
-    }, 1)
+    this.operationQueue = async.queue((task, callback) => task(callback), 1)
   }
 
   download (url) {
     const self = this
     self.url = url
-  
+
     self.operationQueue.push(queueCallback => {
       self.icon = gm(request(self.url)).stream((err, stdout, stderr) => {
-        self.filePath = self.path + self.name + ".png"
+        self.filePath = self.path + self.name + '.png'
         var writeStream = fs.createWriteStream(self.filePath)
         stdout.pipe(writeStream)
-  
+
         writeStream.on('error', err => {
           console.log(err)
           queueCallback()
         })
-  
+
         writeStream.on('finish', () => {
-          console.log("download finish")
+          console.log('download finish')
           queueCallback()
         })
         stdout.on('error', err => {
@@ -49,15 +46,16 @@ class iconCreator {
   }
 
   contrast (amount) {
-    console.log("iconCreator.prototype.contrast call")
+    console.log('iconCreator.prototype.contrast call')
     const self = this
     self.operationQueue.push(queueCallback => {
       amount = amount ? amount : 10
-      const cute = `convert ${self.filePath} -fuzz ${amount} % -fill black +opaque black ${self.filePath}`
+      const cute = `convert ${self.filePath} -fuzz ${amount} ${self.filePath} -fill black +opaque black ${self.filePath}`
       exec(cute, function (error, stdout, stderr) {
         if (error || stderr) {
           console.log(error || stderr)
         }
+        console.log('done, CB')
         queueCallback()
       })
     })
@@ -75,7 +73,7 @@ class iconCreator {
         queueCallback()
       })
     })
-    return self  
+    return self
   }
 
   checkColor(x, y) {
@@ -100,8 +98,8 @@ class iconCreator {
   resizeAndCenter(size) {
     const self = this
     self.operationQueue.push(queueCallback => {
-      size = size ? size : "220x220"
-      const cute = `convert -define png:size=${size} ${self.filePath} -thumbnail \"200x200\" -background transparent -gravity center -extent 220x220 ${self.filePath}`
+      size = size ? size : '220x220'
+      const cute = `convert -define png:size=${size} ${self.filePath} -thumbnail \'200x200\' -background transparent -gravity center -extent 220x220 ${self.filePath}`
       exec(cute, (error, stdout, stderr) => {
         if (error || stderr) {
           console.log(error || stderr)
@@ -115,8 +113,8 @@ class iconCreator {
   toBmp() {
     const self = this
     self.operationQueue.push(queueCallback => {
-      self.filePath_bmp = self.filePath.replace(".png", ".bmp")
-      const cute = `convert ${self.filePath} -background \"#FFFFFF\" -flatten ${self.filePath_bmp}`
+      self.filePath_bmp = self.filePath.replace('.png', '.bmp')
+      const cute = `convert ${self.filePath} -background \'#FFFFFF\' -flatten ${self.filePath_bmp}`
       exec(cute, (error, stdout, stderr) => {
         if (error || stderr) {
           console.log(error || stderr)
@@ -124,13 +122,13 @@ class iconCreator {
         queueCallback()
       })
     })
-    return self  
+    return self
   }
 
   toSvg () {
     const self = this
     self.operationQueue.push(queueCallback => {
-      self.filePath_svg = self.filePath_bmp.replace(".bmp", ".svg")
+      self.filePath_svg = self.filePath_bmp.replace('.bmp', '.svg')
       const cute = `potrace -s -o ${self.filePath_svg} ${self.filePath_bmp}`
       exec(cute, (error, stdout, stderr) => {
         if (error || stderr) {
@@ -139,7 +137,7 @@ class iconCreator {
         queueCallback()
       })
     })
-    return self  
+    return self
   }
 
   pixelate (filter, scale, threshold) {
@@ -156,6 +154,12 @@ class iconCreator {
         queueCallback()
       })
     })
+    return self
+  }
+
+  done (callback) {
+    const self = this
+    self.operationQueue.push(callback)
     return self
   }
 }
